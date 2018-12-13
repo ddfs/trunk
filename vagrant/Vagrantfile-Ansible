@@ -1,0 +1,66 @@
+# -*- mode: ruby -*-
+Vagrant.configure('2') do |config|
+  vbox_cpu  = 1
+  vbox_mem  = 768
+  vbox_ip   = "192.168.88.50"
+
+  # vbox_os = "centos/7"
+  # vbox_os = "centos/6"
+
+  # vbox_os = "debian/testing64" # --> buster64
+  vbox_os = "debian/stretch64"
+  # vbox_os = "debian/jessie64"
+  # vbox_os = "debian/wheezy64"
+
+  # vbox_os = "fedora/29-cloud-base"
+  # vbox_os = "fedora/28-cloud-base"
+  # vbox_os = "fedora/27-cloud-base"
+  # vbox_os = "fedora/26-cloud-base"
+
+  # vbox_os = "ubuntu/disco64"
+  # vbox_os = "ubuntu/bionic64"
+  # vbox_os = "ubuntu/xenial64"
+  # vbox_os = "ubuntu/trusty64"
+  # vbox_os = "ubuntu/precise64"
+
+  # ssh
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+
+  # python
+  config.vm.provision 'shell', inline: 'if [[ ! -z $(which python 2>/dev/null) ]]; then echo "OK"; else ln -s /usr/bin/python3 -T /usr/bin/python; fi', privileged: true
+
+  # print something random
+  puts "Refresh: %d" % rand(1...100)
+
+  config.vm.define 'tests' do |node|
+    node.vm.box = vbox_os
+    node.vm.network :private_network, ip: vbox_ip, nic_type: "virtio"
+    # node.vm.hostname = 'ansible.local'
+  end
+
+  config.vm.provider "virtualbox" do |virtualbox|
+    virtualbox.cpus = "#{vbox_cpu}"
+    virtualbox.memory = "#{vbox_mem}"
+    virtualbox.default_nic_type = "virtio"
+    virtualbox.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
+    virtualbox.customize ["modifyvm", :id, "--audio", "none"]
+    virtualbox.customize ["modifyvm", :id, "--vram", "16"]
+    virtualbox.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    virtualbox.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
+
+  config.vm.provision 'ansible' do |ansible|
+    ansible.inventory_path = 'tests/inventory.yml'
+    ansible.playbook = 'tests/playbook.yml'
+    ansible.limit = "tests"
+    ansible.verbose = ""
+    ansible.become = true
+    ansible.compatibility_mode = "2.0"
+    ansible.host_key_checking = false
+    ansible.extra_vars = {
+      ansible_python_interpreter:"/usr/bin/python"
+    }
+    ansible.raw_arguments = [ "--flush-cache" ]
+  end
+end
