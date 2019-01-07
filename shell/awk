@@ -1,0 +1,2 @@
+# using awk split within loop
+for f in "/pat/to/lib/*.so"; do ln -sf ${f} -T /usr/local/lib/$(echo $f | awk '{i=split($0, array, "\/")} END{print array[i]}'); done;
