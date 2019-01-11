@@ -1,0 +1,4 @@
+---
+- name: converge | empty playbook
+  hosts: all
+  roles: []
