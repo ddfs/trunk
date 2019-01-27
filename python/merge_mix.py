@@ -17,18 +17,18 @@ except ImportError:
 # feel free to replace with built-in copy, map, itertools etc as you like.
 #
 
-def merge_conf(x, y):
+def merge_mix(x, y):
     rx = x
     ry = y
     xy = {}
 
     for k in rx:
         if k in ry and isinstance(rx[k], MutableMapping) and isinstance(ry[k], MutableMapping):
-            xy[k] = merge_conf(rx[k], ry[k])
+            xy[k] = merge_mix(rx[k], ry[k])
         elif k in ry and isinstance(rx[k], MutableSequence) and isinstance(ry[k], MutableSequence):
             xy[k] = ry[k] + rx[k]
         elif k not in ry and isinstance(rx[k], MutableMapping):
-            xy[k] = merge_conf(x[k], {})
+            xy[k] = merge_mix(x[k], {})
         elif k not in ry and isinstance(rx[k], MutableSequence):
             xy[k] = rx[k] if k not in xy else  xy[k] + rx[k]
         else:
@@ -36,7 +36,7 @@ def merge_conf(x, y):
 
     for k in ry:
         if k in rx and isinstance(ry[k], MutableMapping) and isinstance(rx[k], MutableMapping):
-            xy[k] = merge_conf(ry[k], rx[k])
+            xy[k] = merge_mix(ry[k], rx[k])
         elif k in rx and isinstance(ry[k], MutableSequence) and isinstance(rx[k], MutableSequence):
             xy[k] = ry[k] + rx[k]
         elif k not in rx and isinstance(ry[k], MutableMapping):
@@ -89,12 +89,12 @@ print(update)
 print('---')
 print("--- update/base")
 try:
-    print merge_conf(update, base)
+    print merge_mix(update, base)
 except Exception as e:
     print ("error: %s" % e.message)
 print("--- base/update")
 try:
-    print merge_conf(base, update)
+    print merge_mix(base, update)
 except Exception as e:
     print ("error: %s" % e.message)
 print("---")
