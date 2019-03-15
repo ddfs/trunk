@@ -16,4 +16,4 @@ tail logs:\
 ```docker logs --tail 100 --follow --timestamps contianer_name```
 
 update containers:\
-```for di in `docker image ls --format '{{.Repository}}:{{.Tag}}' | sort | uniq`; do docker pull ${di}; done;```
+```for i in $(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -v "^<none>*$" | sed -e "s|<none>|latest|g" | sort | uniq); do echo "${i}"; done;```
